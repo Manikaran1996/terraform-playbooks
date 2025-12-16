@@ -49,3 +49,8 @@ variable "n8n_secure_cookie" {
   default     = "false"
   description = "Secure cookie"
 }
+
+variable "n8n_encryption_key" {
+  default     = "df1b1305d14be3b99bcc5977b4ed5c8f4bb5dc943ce2ba3425c84fe3d7e4b62b"
+  description = "Encryption key"
+}

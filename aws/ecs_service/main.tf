@@ -47,6 +47,7 @@ resource "aws_ecs_task_definition" "n8n" {
       image     = "n8nio/n8n:latest"
       port      = 5678
       essential = true
+      command   = ["start"]
       environment = [
         {
           name  = "GENERIC_TIMEZONE"
@@ -85,24 +86,29 @@ resource "aws_ecs_task_definition" "n8n" {
           "value" = "http"
         },
         {
-          "name"  = "N8N_QUEUE_BULL_REDIS_SSL"
+          "name"  = "QUEUE_BULL_REDIS_TLS"
           "value" = "true"
+        },
+        {
+          "name"  = "QUEUE_BULL_REDIS_PORT"
+          "value" = "6379"
         },
         {
           "name"  = "N8N_HOST"
           "value" = module.n8n_load_balancer.dns_name
         },
         {
-          "name"  = "N8N_PROCESS"
-          "value" = "main"
+          "name"  = "N8N_ENCRYPTION_KEY"
+          "value" = var.n8n_encryption_key
         }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           awslogs-group         = "/ecs/n8n"
-          awslogs-region        = "ap-south-1"
+          awslogs-region        = var.region
           awslogs-stream-prefix = "ecs"
+          awslogs-create-group  = "true"
         }
       }
       portMappings = [
@@ -159,9 +165,8 @@ resource "aws_ecs_task_definition" "n8n-worker" {
     {
       name      = "n8n-worker"
       image     = "n8nio/n8n:latest"
-      port      = 5678
       essential = true
-      command   = ["n8n", "worker"]
+      command   = ["worker"]
       environment = [
         {
           name  = "GENERIC_TIMEZONE"
@@ -196,20 +201,21 @@ resource "aws_ecs_task_definition" "n8n-worker" {
           value = aws_elasticache_serverless_cache.n8n_redis.endpoint[0].address
         },
         {
-          "name"  = "N8N_QUEUE_BULL_REDIS_SSL"
+          "name"  = "QUEUE_BULL_REDIS_TLS"
           "value" = "true"
         },
         {
-          "name"  = "N8N_PROCESS"
-          "value" = "worker"
+          "name"  = "N8N_ENCRYPTION_KEY"
+          "value" = var.n8n_encryption_key
         }
       ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           awslogs-group         = "/ecs/n8n"
-          awslogs-region        = "ap-south-1"
+          awslogs-region        = var.region
           awslogs-stream-prefix = "ecs"
+          awslogs-create-group  = "true"
         }
       }
     }
